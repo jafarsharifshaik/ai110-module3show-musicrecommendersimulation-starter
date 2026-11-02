@@ -21,16 +21,18 @@ Prompts:
 
 ## 3. How the Model Works  
 
-Explain your scoring approach in simple language.  
+Think of the recommender as a judge holding a scorecard. It looks at every song in the catalog, one at a time, and asks four questions about how well that song fits you:
 
-Prompts:  
+1. **Is it your favorite genre?** If yes, the song gets 2 points. This is the biggest prize, because genre sets the overall sound.
+2. **Is it the mood you're in?** If yes, it gets 1 point.
+3. **Is its energy close to the energy you want?** Up to 1.5 points. A song that matches your target energy exactly gets all 1.5. The further away it is, too calm or too intense, the fewer points it gets. A louder or faster song doesn't win just for being louder or faster. It wins for being *closest* to what you asked for.
+4. **Does it have the kind of sound you like?** Up to 0.5 points. If you like acoustic music, more acoustic songs earn more. If you don't, more produced, electronic-sounding songs earn more.
 
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
+A perfect song scores 5 points. Every time a song earns points, the judge writes down a short reason, such as "genre match: pop (+2.0)", so you can see why it was picked.
 
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+After every song has a score, the recommender sorts them from highest to lowest and shows you the top five. It doesn't use other people's listening history, song lyrics, or popularity. It only compares each song's own attributes to your stated taste.
+
+**Changes from the starter logic:** the starter returned the first five songs in the file, no matter who was asking. Now every song gets a real score, and the list comes back ranked with an explanation for each pick. I also added 8 songs in new genres and moods to the catalog.
 
 ---
 
