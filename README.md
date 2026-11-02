@@ -136,13 +136,13 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Output of `python -m src.main` for the default pop/happy profile and the lofi/chill test profile:
+Output of `python -m src.main`. It runs three normal profiles and three edge-case profiles designed to trick the scoring (default weights: genre 2.0, mood 1.0, energy 1.5, acoustic 0.5):
 
 ```
 Loaded songs: 18
 
 ============================================================
-Happy pop fan
+High-Energy Pop
   favorite_genre=pop, favorite_mood=happy, target_energy=0.8, likes_acoustic=False
 ============================================================
 1. Sunrise City by Neon Echo  (pop / happy)
@@ -171,7 +171,7 @@ Happy pop fan
      - produced sound fit (+0.39)
 
 ============================================================
-Late-night lofi studier
+Chill Lofi
   favorite_genre=lofi, favorite_mood=chill, target_energy=0.4, likes_acoustic=True
 ============================================================
 1. Library Rain by Paper Lanterns  (lofi / chill)
@@ -200,9 +200,117 @@ Late-night lofi studier
    Score: 1.90 / 5.00
      - energy 0.37 vs target 0.40 (+1.46)
      - acoustic sound fit (+0.45)
+
+============================================================
+Deep Intense Rock
+  favorite_genre=rock, favorite_mood=intense, target_energy=0.9, likes_acoustic=False
+============================================================
+1. Storm Runner by Voltline  (rock / intense)
+   Score: 4.93 / 5.00
+     - genre match: rock (+2.0)
+     - mood match: intense (+1.0)
+     - energy 0.91 vs target 0.90 (+1.48)
+     - produced sound fit (+0.45)
+2. Gym Hero by Max Pulse  (pop / intense)
+   Score: 2.93 / 5.00
+     - mood match: intense (+1.0)
+     - energy 0.93 vs target 0.90 (+1.46)
+     - produced sound fit (+0.47)
+3. Pulse Reactor by Kilowatt Kids  (edm / energetic)
+   Score: 1.91 / 5.00
+     - energy 0.95 vs target 0.90 (+1.43)
+     - produced sound fit (+0.48)
+4. Ironclad by Rust Prophet  (metal / angry)
+   Score: 1.88 / 5.00
+     - energy 0.97 vs target 0.90 (+1.40)
+     - produced sound fit (+0.48)
+5. Sunrise City by Neon Echo  (pop / happy)
+   Score: 1.79 / 5.00
+     - energy 0.82 vs target 0.90 (+1.38)
+     - produced sound fit (+0.41)
+
+============================================================
+Sad Raver (conflict: sad mood, high energy)
+  favorite_genre=edm, favorite_mood=sad, target_energy=0.9, likes_acoustic=False
+============================================================
+1. Pulse Reactor by Kilowatt Kids  (edm / energetic)
+   Score: 3.90 / 5.00
+     - genre match: edm (+2.0)
+     - energy 0.95 vs target 0.90 (+1.43)
+     - produced sound fit (+0.48)
+2. Storm Runner by Voltline  (rock / intense)
+   Score: 1.93 / 5.00
+     - energy 0.91 vs target 0.90 (+1.48)
+     - produced sound fit (+0.45)
+3. Gym Hero by Max Pulse  (pop / intense)
+   Score: 1.93 / 5.00
+     - energy 0.93 vs target 0.90 (+1.46)
+     - produced sound fit (+0.47)
+4. Ironclad by Rust Prophet  (metal / angry)
+   Score: 1.88 / 5.00
+     - energy 0.97 vs target 0.90 (+1.40)
+     - produced sound fit (+0.48)
+5. Sunrise City by Neon Echo  (pop / happy)
+   Score: 1.79 / 5.00
+     - energy 0.82 vs target 0.90 (+1.38)
+     - produced sound fit (+0.41)
+
+============================================================
+Acoustic Metalhead (conflict: metal + acoustic)
+  favorite_genre=metal, favorite_mood=angry, target_energy=0.95, likes_acoustic=True
+============================================================
+1. Ironclad by Rust Prophet  (metal / angry)
+   Score: 4.48 / 5.00
+     - genre match: metal (+2.0)
+     - mood match: angry (+1.0)
+     - energy 0.97 vs target 0.95 (+1.47)
+     - acoustic sound fit (+0.01)
+2. Pulse Reactor by Kilowatt Kids  (edm / energetic)
+   Score: 1.52 / 5.00
+     - energy 0.95 vs target 0.95 (+1.50)
+     - acoustic sound fit (+0.02)
+3. Gym Hero by Max Pulse  (pop / intense)
+   Score: 1.50 / 5.00
+     - energy 0.93 vs target 0.95 (+1.47)
+     - acoustic sound fit (+0.03)
+4. Storm Runner by Voltline  (rock / intense)
+   Score: 1.49 / 5.00
+     - energy 0.91 vs target 0.95 (+1.44)
+     - acoustic sound fit (+0.05)
+5. Sunrise City by Neon Echo  (pop / happy)
+   Score: 1.40 / 5.00
+     - energy 0.82 vs target 0.95 (+1.30)
+     - acoustic sound fit (+0.09)
+
+============================================================
+K-Pop Fan (genre not in catalog)
+  favorite_genre=k-pop, favorite_mood=happy, target_energy=0.7, likes_acoustic=False
+============================================================
+1. Rooftop Lights by Indigo Parade  (indie pop / happy)
+   Score: 2.74 / 5.00
+     - mood match: happy (+1.0)
+     - energy 0.76 vs target 0.70 (+1.41)
+     - produced sound fit (+0.33)
+2. Sunrise City by Neon Echo  (pop / happy)
+   Score: 2.73 / 5.00
+     - mood match: happy (+1.0)
+     - energy 0.82 vs target 0.70 (+1.32)
+     - produced sound fit (+0.41)
+3. Concrete Crown by Block Theory  (hip hop / confident)
+   Score: 1.82 / 5.00
+     - energy 0.78 vs target 0.70 (+1.38)
+     - produced sound fit (+0.44)
+4. Night Drive Loop by Neon Echo  (synthwave / moody)
+   Score: 1.81 / 5.00
+     - energy 0.75 vs target 0.70 (+1.42)
+     - produced sound fit (+0.39)
+5. Storm Runner by Voltline  (rock / intense)
+   Score: 1.63 / 5.00
+     - energy 0.91 vs target 0.70 (+1.18)
+     - produced sound fit (+0.45)
 ```
 
-The pop/happy results match what I expected. Sunrise City is a near-perfect fit. Gym Hero comes second only because of its genre match, even though it's "intense", and it beats Rooftop Lights, which is happy with the right energy but labeled "indie pop". This is the genre-overweighting bias predicted above.
+The High-Energy Pop results mostly match what I expected. Sunrise City is a near-perfect fit. Gym Hero comes second only because of its genre match, even though it's "intense", and it beats Rooftop Lights, which is happy with the right energy but labeled "indie pop". This is the genre-overweighting bias predicted above. See [model_card.md](model_card.md#7-evaluation) for the full evaluation.
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
 
@@ -210,13 +318,17 @@ The pop/happy results match what I expected. Sunrise City is a near-perfect fit.
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+**Weight shift: energy doubled (1.5 → 3.0), genre halved (2.0 → 1.0).** The highest possible score goes from 5.0 to 5.5, and every score stays within it, so the math is still valid. I ran it by overriding the weights for one run. The code still uses the original weights.
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+| Profile | Before (top 3) | After (top 3) | Verdict |
+|---|---|---|---|
+| High-Energy Pop | Sunrise City, Gym Hero, Rooftop Lights | Sunrise City, **Rooftop Lights**, Gym Hero | More accurate: the happy song now beats the intense one |
+| Chill Lofi | Library Rain, Midnight Coding, Focus Flow | Midnight Coding, Library Rain, Focus Flow | Different, not better. Spacewalk Thoughts (ambient/chill) closes the gap from 2.78 to 4.10 but stays 4th |
+| Deep Intense Rock | Storm Runner, Gym Hero, Pulse Reactor | same | No change |
+| Sad Raver | Pulse Reactor, Storm Runner, Gym Hero | same | Still wrong: the only sad song stays out of the top 5 |
+| K-Pop Fan | Rooftop Lights, Sunrise City, Concrete Crown | Rooftop Lights, Sunrise City, Night Drive Loop | Different: Island Breeze (reggae) enters at #5 and Storm Runner drops out |
 
----
+Conclusion: lowering the genre weight helps when the genre label is too strict (pop vs. indie pop). It doesn't fix the deeper problem, which is that energy already outweighs mood, and the shift makes that worse.
 
 ## Limitations and Risks
 

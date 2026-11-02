@@ -53,6 +53,10 @@ class Recommender:
         _, reasons = score_song(asdict(user), asdict(song))
         return "; ".join(reasons)
 
+def max_score() -> float:
+    """Return the highest score any song can earn under the current weights."""
+    return GENRE_WEIGHT + MOOD_WEIGHT + ENERGY_WEIGHT + ACOUSTIC_WEIGHT
+
 def load_songs(csv_path: str) -> List[Dict]:
     """Read songs.csv into a list of dicts, converting numeric columns to int/float."""
     int_fields = {"id"}

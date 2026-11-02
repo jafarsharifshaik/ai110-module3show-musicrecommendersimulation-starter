@@ -63,29 +63,46 @@ Prompts:
 
 ## 6. Limitations and Bias 
 
-Where the system struggles or behaves unfairly. 
+**Weakness found: high-energy users all get the same handful of songs.** The catalog has only five songs with energy above 0.8 (Sunrise City, Gym Hero, Storm Runner, Pulse Reactor, Ironclad), and most genres have just one song. So once a user's genre match is used up, the rest of their list is decided almost entirely by energy closeness. That means anyone who asks for high energy, whether they like rock, edm, metal or pop, gets the same five songs in a slightly different order. Sunrise City appeared in 5 of my 6 test profiles' top fives, and Gym Hero appeared in 4. This is a filter bubble created by a small catalog plus a scoring rule where energy is the strongest number. Mood can't break it either. A mood match is only worth 1 point, so the "Sad Raver" profile (sad mood, high energy) ranked the catalog's only sad song 9th out of 18.
 
-Prompts:  
+Other limitations I noticed:
 
-- Features it does not consider  
-- Genres or moods that are underrepresented  
-- Cases where the system overfits to one preference  
-- Ways the scoring might unintentionally favor some users  
+- **Exact text matching.** "indie pop" gets no genre credit from a "pop" fan, and a "k-pop" fan gets no genre points at all because no song uses that label.
+- **Impossible preferences fail silently.** The "Acoustic Metalhead" profile wants acoustic, high-energy metal. No such song exists, so the acoustic preference just stops mattering, and the user is never told that.
+- **One genre and one mood per user.** Real listeners have several favorites and change moods.
 
 ---
 
 ## 7. Evaluation  
 
-How you checked whether the recommender behaved as expected. 
+**Profiles tested.** I tested three normal profiles (High-Energy Pop, Chill Lofi, Deep Intense Rock) and three edge cases designed to trick the scoring:
 
-Prompts:  
+- **Sad Raver:** edm, sad mood, energy 0.9. The preferences conflict, because sad songs are usually calm.
+- **Acoustic Metalhead:** metal, angry, energy 0.95, likes acoustic. The combination doesn't exist in the catalog.
+- **K-Pop Fan:** a genre that no song in the catalog has.
 
-- Which user profiles you tested  
-- What you looked for in the recommendations  
-- What surprised you  
-- Any simple tests or comparisons you ran  
+I looked at each top 5 and asked whether it "felt" right. The full terminal output is in the README under *Sample Recommendation Output*.
 
-No need for numeric metrics unless you created some.
+**Why a song ranked first, for example Sunrise City for High-Energy Pop (4.88 / 5):** it earns all three big rewards at once. It's pop (+2.0), it's happy (+1.0), and its energy of 0.82 is almost exactly the 0.80 target (+1.47). It also adds +0.41 for being a produced, non-acoustic track. No other song gets both the genre and the mood points.
+
+**Why Gym Hero keeps showing up for people who just want "Happy Pop":** the recommender doesn't really know what "happy" sounds like. It only checks whether the label matches. Gym Hero is labeled pop, and that alone is worth 2 points, which is twice what a mood match is worth. Its energy is also close to what a pop fan asks for. So Gym Hero, a workout song labeled "intense", gets 3.78 points. Rooftop Lights, a genuinely happy song, gets 2.77, because it's labeled "indie pop" and the computer treats that as a completely different genre. To a listener the two are close cousins. To the scoring rule they're strangers.
+
+**What surprised me:**
+
+- The edge cases didn't break anything loudly. They failed quietly. Each one got a confident-looking list that ignored part of what the user asked for.
+- The Sad Raver got upbeat, intense songs. The one sad song (Empty Platform) ranked 9th. Its +1 mood point couldn't make up for being far too calm.
+- The K-Pop Fan got a reasonable list (Rooftop Lights, Sunrise City). Mood and energy still worked as a backup when genre found nothing.
+
+**Comparing pairs of profiles:**
+
+- **High-Energy Pop vs. Chill Lofi:** no overlap at all. Pop gets bright, produced songs around energy 0.8. Lofi gets quiet, acoustic songs around 0.4. This makes sense because the profiles disagree on every feature, so the system clearly separates "pump-up" from "study music".
+- **High-Energy Pop vs. Deep Intense Rock:** both lists share Gym Hero and Sunrise City. Rock puts Storm Runner first because it's the only rock song, then fills the list with other high-energy tracks. This makes sense, but it shows the small catalog: rock fans get pop songs because there's no more rock.
+- **Chill Lofi vs. Deep Intense Rock:** opposite ends of the catalog with zero overlap. Lofi's list stays low-energy all the way down (Spacewalk Thoughts, Coffee Shop Stories), and rock's stays high-energy (Pulse Reactor, Ironclad). Energy closeness is working as intended. It pulls each user toward their own "volume level".
+- **Deep Intense Rock vs. Sad Raver:** the exact same five songs (Storm Runner, Gym Hero, Pulse Reactor, Ironclad, Sunrise City), just reordered. The Sad Raver's edm genre lifts Pulse Reactor to first, but the "sad" mood changes nothing. That's the clearest sign that energy outweighs mood.
+- **Sad Raver vs. Acoustic Metalhead:** the exact same five songs in a different order. Each profile has one preference that can't be satisfied (sad + high energy, acoustic + metal). Once that preference fails, both profiles reduce to "wants high energy", so they converge.
+- **High-Energy Pop vs. K-Pop Fan:** both lists contain Sunrise City and Rooftop Lights, but Gym Hero, which is in the pop list only because of its genre, disappears for the K-Pop Fan. Without a genre match, the K-Pop Fan's mood (happy) and energy (0.7) carry the ranking, and Rooftop Lights edges ahead because its energy of 0.76 is closer to 0.7. This makes sense: removing the genre bonus lets the vibe features decide.
+
+**Experiment: energy doubled, genre halved.** For High-Energy Pop, Rooftop Lights jumped above Gym Hero, which is more accurate. For Chill Lofi, the ambient chill song got much closer to the lofi songs but didn't pass them. For Sad Raver nothing improved, because a higher energy weight only drowns out mood even more. Overall the change made results *different* more often than *better*. See the README *Experiments You Tried* section for the table.
 
 ---
 
