@@ -2,9 +2,15 @@
 Command line runner for the Music Recommender Simulation.
 
 Run from the project root with:  python -m src.main
+Options:
+  --mode {genre-first,mood-first,energy-focused}   choose a scoring strategy
+  --diverse                                       penalize repeated artists/genres
+  --profile TEXT                                  only run profiles whose name contains TEXT
 """
 
-from src.recommender import load_songs, recommend_songs, max_score
+import argparse
+
+from src.recommender import load_songs, recommend_songs, max_score, SCORING_MODES, DEFAULT_MODE
 
 PROFILES = {
     "High-Energy Pop": {
@@ -44,30 +50,77 @@ PROFILES = {
         "target_energy": 0.70,
         "likes_acoustic": False,
     },
+    # Uses the advanced song attributes (mood tags, decade, instrumentalness, popularity, liveness)
+    "Throwback Night Owl": {
+        "favorite_genre": "synthwave",
+        "favorite_mood": "moody",
+        "target_energy": 0.60,
+        "likes_acoustic": False,
+        "desired_tags": ["nostalgic", "nocturnal", "dreamy"],
+        "preferred_decade": 1980,
+        "likes_instrumental": True,
+        "prefers_popular": False,
+        "likes_live": False,
+    },
 }
 
 
-def print_recommendations(name: str, user_prefs: dict, songs: list, k: int = 5) -> None:
-    """Print a ranked, explained list of recommendations for one profile."""
+def format_table(headers: list, rows: list) -> str:
+    """Render rows as an ASCII table; each cell is a list of lines so reasons can stack."""
+    widths = [len(h) for h in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            widths[i] = max(widths[i], *(len(line) for line in cell))
+    border = "+" + "+".join("-" * (w + 2) for w in widths) + "+"
+
+    def render(cells):
+        height = max(len(c) for c in cells)
+        lines = []
+        for n in range(height):
+            parts = [(c[n] if n < len(c) else "").ljust(w) for c, w in zip(cells, widths)]
+            lines.append("| " + " | ".join(parts) + " |")
+        return lines
+
+    out = [border, *render([[h] for h in headers]), border]
+    for row in rows:
+        out += render(row)
+        out.append(border)
+    return "\n".join(out)
+
+
+def print_recommendations(name: str, user_prefs: dict, songs: list, k: int, mode: str, diverse: bool) -> None:
+    """Print a ranked, explained table of recommendations for one profile."""
     prefs_text = ", ".join(f"{key}={value}" for key, value in user_prefs.items())
-    print("=" * 60)
-    print(f"{name}")
+    print(f"{name}  [mode: {mode}{', diverse' if diverse else ''}]")
     print(f"  {prefs_text}")
-    print("=" * 60)
-    for rank, (song, score, explanation) in enumerate(recommend_songs(user_prefs, songs, k), start=1):
-        print(f"{rank}. {song['title']} by {song['artist']}  ({song['genre']} / {song['mood']})")
-        print(f"   Score: {score:.2f} / {max_score():.2f}")
-        for reason in explanation.split("; "):
-            print(f"     - {reason}")
+    rows = []
+    for rank, (song, score, explanation) in enumerate(
+            recommend_songs(user_prefs, songs, k, mode=mode, diverse=diverse), start=1):
+        rows.append([
+            [str(rank)],
+            [song["title"], f"by {song['artist']}"],
+            [song["genre"], song["mood"]],
+            [f"{score:.2f}", f"/ {max_score(user_prefs, mode):.2f}"],
+            explanation.split("; "),
+        ])
+    print(format_table(["#", "Song", "Genre / Mood", "Score", "Reasons"], rows))
     print()
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Music Recommender Simulation")
+    parser.add_argument("--mode", choices=sorted(SCORING_MODES), default=DEFAULT_MODE)
+    parser.add_argument("--diverse", action="store_true")
+    parser.add_argument("--profile", default="")
+    parser.add_argument("-k", type=int, default=5)
+    args = parser.parse_args()
+
     songs = load_songs("data/songs.csv")
     print(f"Loaded songs: {len(songs)}\n")
 
     for name, user_prefs in PROFILES.items():
-        print_recommendations(name, user_prefs, songs, k=5)
+        if args.profile.lower() in name.lower():
+            print_recommendations(name, user_prefs, songs, args.k, args.mode, args.diverse)
 
 
 if __name__ == "__main__":
